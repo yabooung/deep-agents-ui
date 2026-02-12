@@ -3127,6 +3127,18 @@ keyv@^4.5.4:
     semver "^7.6.3"
     uuid "^10.0.0"
 
+langsmith@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.5.2.tgz#9ab70755d396669ad6a59086d830c54e13eb9f88"
+  integrity sha512-CfkcQsiajtTWknAcyItvJsKEQdY2VgDpm6U8pRI9wnM07mevnOv5EF+RcqWGwx37SEUxtyi2RXMwnKW8b06JtA==
+  dependencies:
+    "@types/uuid" "^10.0.0"
+    chalk "^4.1.2"
+    console-table-printer "^2.12.1"
+    p-queue "^6.6.2"
+    semver "^7.6.3"
+    uuid "^10.0.0"
+
 language-subtag-registry@^0.3.20:
   version "0.3.23"
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.23.tgz#23529e04d9e3b74679d70142df3fd2eb6ec572e7"

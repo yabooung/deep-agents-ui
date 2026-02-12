@@ -2,40 +2,35 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useQueryState } from "nuqs";
-import { getConfig, saveConfig, StandaloneConfig } from "@/lib/config";
-import { ConfigDialog } from "@/app/components/ConfigDialog";
+import { getConfig, StandaloneConfig } from "@/lib/config";
+// import { ConfigDialog } from "@/app/components/ConfigDialog"; // 주석 처리: 환경변수 사용으로 제거
 import { Button } from "@/components/ui/button";
 import { Assistant } from "@langchain/langgraph-sdk";
 import { ClientProvider, useClient } from "@/providers/ClientProvider";
-import { Settings, MessagesSquare, SquarePen } from "lucide-react";
+import { SquarePen } from "lucide-react";
+// import { Settings, MessagesSquare } from "lucide-react"; // 주석 처리: Settings 버튼 제거
 import {
-  ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ThreadList } from "@/app/components/ThreadList";
+// import { ThreadList } from "@/app/components/ThreadList"; // 주석 처리: 스레드 기록 기능 제거
 import { ChatProvider } from "@/providers/ChatProvider";
 import { ChatInterface } from "@/app/components/ChatInterface";
 
 interface HomePageInnerProps {
   config: StandaloneConfig;
-  configDialogOpen: boolean;
-  setConfigDialogOpen: (open: boolean) => void;
-  handleSaveConfig: (config: StandaloneConfig) => void;
+  // configDialogOpen: boolean; // 주석 처리: ConfigDialog 제거
+  // setConfigDialogOpen: (open: boolean) => void; // 주석 처리: ConfigDialog 제거
+  // handleSaveConfig: (config: StandaloneConfig) => void; // 주석 처리: ConfigDialog 제거
 }
 
-function HomePageInner({
-  config,
-  configDialogOpen,
-  setConfigDialogOpen,
-  handleSaveConfig,
-}: HomePageInnerProps) {
+function HomePageInner({ config }: HomePageInnerProps) {
   const client = useClient();
   const [threadId, setThreadId] = useQueryState("threadId");
-  const [sidebar, setSidebar] = useQueryState("sidebar");
+  // const [sidebar, setSidebar] = useQueryState("sidebar"); // 주석 처리: 스레드 사이드바 제거
+  // const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null); // 주석 처리: 스레드 기능 제거
+  // const [interruptCount, setInterruptCount] = useState(0); // 주석 처리: 스레드 기능 제거
 
-  const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null);
-  const [interruptCount, setInterruptCount] = useState(0);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
 
   const fetchAssistant = useCallback(async () => {
@@ -102,19 +97,22 @@ function HomePageInner({
     fetchAssistant();
   }, [fetchAssistant]);
 
+
   return (
     <>
-      <ConfigDialog
+      {/* 주석 처리: ConfigDialog 제거 - 환경변수 사용으로 변경 */}
+      {/* <ConfigDialog
         open={configDialogOpen}
         onOpenChange={setConfigDialogOpen}
         onSave={handleSaveConfig}
         initialConfig={config}
-      />
+      /> */}
       <div className="flex h-screen flex-col">
         <header className="flex h-16 items-center justify-between border-b border-border px-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">Deep Agent UI</h1>
-            {!sidebar && (
+            <h1 className="text-xl font-semibold">의료 규제 전문가 에이전트</h1>
+            {/* 주석 처리: Threads 버튼 제거 - 스레드 기록 기능 제거 */}
+            {/* {!sidebar && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -129,21 +127,22 @@ function HomePageInner({
                   </span>
                 )}
               </Button>
-            )}
+            )} */}
           </div>
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground">
               <span className="font-medium">Assistant:</span>{" "}
               {config.assistantId}
             </div>
-            <Button
+            {/* 주석 처리: Settings 버튼 제거 - 환경변수 사용으로 변경 */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() => setConfigDialogOpen(true)}
             >
               <Settings className="mr-2 h-4 w-4" />
               Settings
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               size="sm"
@@ -162,7 +161,8 @@ function HomePageInner({
             direction="horizontal"
             autoSaveId="standalone-chat"
           >
-            {sidebar && (
+            {/* 주석 처리: ThreadList 사이드바 제거 - 스레드 기록 기능 제거 */}
+            {/* {sidebar && (
               <>
                 <ResizablePanel
                   id="thread-history"
@@ -182,16 +182,16 @@ function HomePageInner({
                 </ResizablePanel>
                 <ResizableHandle />
               </>
-            )}
+            )} */}
 
             <ResizablePanel
               id="chat"
               className="relative flex flex-col"
-              order={2}
+              order={1}
             >
               <ChatProvider
                 activeAssistant={assistant}
-                onHistoryRevalidate={() => mutateThreads?.()}
+                // onHistoryRevalidate={() => mutateThreads?.()} // 주석 처리: 스레드 기능 제거
               >
                 <ChatInterface assistant={assistant} />
               </ChatProvider>
@@ -205,19 +205,31 @@ function HomePageInner({
 
 function HomePageContent() {
   const [config, setConfig] = useState<StandaloneConfig | null>(null);
-  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  // const [configDialogOpen, setConfigDialogOpen] = useState(false); // 주석 처리: ConfigDialog 제거
   const [assistantId, setAssistantId] = useQueryState("assistantId");
 
-  // On mount, check for saved config, otherwise show config dialog
+  // Load config from environment variables
+  // 주석 처리: 이전 localStorage 기반 설정 로직
+  // useEffect(() => {
+  //   const savedConfig = getConfig();
+  //   if (savedConfig) {
+  //     setConfig(savedConfig);
+  //     if (!assistantId) {
+  //       setAssistantId(savedConfig.assistantId);
+  //     }
+  //   } else {
+  //     setConfigDialogOpen(true);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   useEffect(() => {
-    const savedConfig = getConfig();
-    if (savedConfig) {
-      setConfig(savedConfig);
+    const envConfig = getConfig();
+    if (envConfig) {
+      setConfig(envConfig);
       if (!assistantId) {
-        setAssistantId(savedConfig.assistantId);
+        setAssistantId(envConfig.assistantId);
       }
-    } else {
-      setConfigDialogOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -229,10 +241,11 @@ function HomePageContent() {
     }
   }, [config, assistantId, setAssistantId]);
 
-  const handleSaveConfig = useCallback((newConfig: StandaloneConfig) => {
-    saveConfig(newConfig);
-    setConfig(newConfig);
-  }, []);
+  // 주석 처리: 이전 설정 저장 함수
+  // const handleSaveConfig = useCallback((newConfig: StandaloneConfig) => {
+  //   saveConfig(newConfig);
+  //   setConfig(newConfig);
+  // }, []);
 
   const langsmithApiKey =
     config?.langsmithApiKey || process.env.NEXT_PUBLIC_LANGSMITH_API_KEY || "";
@@ -240,23 +253,25 @@ function HomePageContent() {
   if (!config) {
     return (
       <>
-        <ConfigDialog
+        {/* 주석 처리: ConfigDialog 제거 - 환경변수 사용으로 변경 */}
+        {/* <ConfigDialog
           open={configDialogOpen}
           onOpenChange={setConfigDialogOpen}
           onSave={handleSaveConfig}
-        />
+        /> */}
         <div className="flex h-screen items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Welcome to Standalone Chat</h1>
+            <h1 className="text-2xl font-bold">의료 규제 전문가 에이전트</h1>
             <p className="mt-2 text-muted-foreground">
-              Configure your deployment to get started
+              환경변수를 설정해주세요: NEXT_PUBLIC_DEPLOYMENT_URL, NEXT_PUBLIC_ASSISTANT_ID
             </p>
-            <Button
+            {/* 주석 처리: ConfigDialog 열기 버튼 제거 */}
+            {/* <Button
               onClick={() => setConfigDialogOpen(true)}
               className="mt-4"
             >
               Open Configuration
-            </Button>
+            </Button> */}
           </div>
         </div>
       </>
@@ -268,12 +283,13 @@ function HomePageContent() {
       deploymentUrl={config.deploymentUrl}
       apiKey={langsmithApiKey}
     >
-      <HomePageInner
+      <HomePageInner config={config} />
+      {/* <HomePageInner
         config={config}
         configDialogOpen={configDialogOpen}
         setConfigDialogOpen={setConfigDialogOpen}
         handleSaveConfig={handleSaveConfig}
-      />
+      /> */}
     </ClientProvider>
   );
 }

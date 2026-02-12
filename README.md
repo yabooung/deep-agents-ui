@@ -1,6 +1,8 @@
-# 🚀🧠 Deepagents UI
+# 🏥 의료 규제 전문가 에이전트
 
-[Deepagents](https://github.com/langchain-ai/deepagents) is a simple, open source agent harness that implements a few generally useful tools, including planning (prior to task execution), computer access (giving the able access to a shell and a filesystem), and sub-agent delegation (isolated task execution). This is a UI for interacting with deepagents.
+[Deepagents](https://github.com/langchain-ai/deepagents)를 기반으로 한 **의료 규제 전문가 에이전트** 프론트엔드 애플리케이션입니다. LangGraph SDK를 사용하여 LangChain/LangGraph 에이전트와 상호작용하는 웹 인터페이스를 제공합니다.
+
+> 📖 **상세 문서**: [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md)를 참조하세요.
 
 ## 🚀 Quickstart
 
@@ -50,15 +52,24 @@ You can get the Deployment URL and Assistant ID from the terminal output and `la
 - Deployment URL: http://127.0.1:2024
 - Assistant ID: `research`
 
-**Open Deepagents UI** at [http://localhost:3000](http://localhost:3000) and input the Deployment URL and Assistant ID:
+**환경변수 설정**
 
-- **Deployment URL**: The URL for the LangGraph deployment you are connecting to
-- **Assistant ID**: The ID of the assistant or agent you want to use
-- [Optional] **LangSmith API Key**: Your LangSmith API key (format: `lsv2_pt_...`). This may be required for accessing deployed LangGraph applications. You can also provide this via the `NEXT_PUBLIC_LANGSMITH_API_KEY` environment variable.
+애플리케이션은 환경변수를 통해 설정됩니다. `.env.local` 파일을 생성하고 다음 변수들을 설정하세요:
 
-**Usagee**
+```env
+NEXT_PUBLIC_DEPLOYMENT_URL=http://your-deployment-url:port
+NEXT_PUBLIC_ASSISTANT_ID=agent
+NEXT_PUBLIC_LANGSMITH_API_KEY=lsv2_pt_xxxxx
+NEXT_PUBLIC_LANGSMITH_PROJECT_NAME=your_project_name
+NEXT_PUBLIC_LANGSMITH_PROJECT_ID=your_project_id
+DAILY_COST_LIMIT=10.0
+```
 
-You can interact with the deployment via the chat interface and can edit settings at any time by clicking on the Settings button in the header.
+**애플리케이션 실행** at [http://localhost:3000](http://localhost:3000)
+
+**사용법**
+
+채팅 인터페이스를 통해 에이전트와 대화할 수 있습니다. 설정은 환경변수를 통해 관리됩니다.
 
 <img width="2039" height="1495" alt="Screenshot 2025-11-17 at 1 11 27 PM" src="https://github.com/user-attachments/assets/50e1b5f3-a626-4461-9ad9-90347e471e8c" />
 
@@ -70,21 +81,32 @@ You can click on any file to view it.
 
 <img width="2039" height="1495" alt="Screenshot 2025-11-17 at 1 11 40 PM" src="https://github.com/user-attachments/assets/9883677f-e365-428d-b941-992bdbfa79dd" />
 
-### Optional: Environment Variables
+### 주요 기능
 
-You can optionally set environment variables instead of using the settings dialog:
+- ✅ **실시간 채팅**: LangGraph SDK를 통한 스트리밍 응답
+- ✅ **비용 제한**: 일일 비용 제한 기능으로 사용량 관리
+- ✅ **동적 로딩**: 메시지 생성 중 시각적 피드백
+- ✅ **에러 처리**: 사용자 친화적 에러 메시지
 
-```env
-NEXT_PUBLIC_LANGSMITH_API_KEY="lsv2_xxxx"
+### Docker 배포
+
+```bash
+# 개발 환경
+docker-compose up --build
+
+# 프로덕션 환경
+docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
-**Note:** Settings configured in the UI take precedence over environment variables.
+자세한 내용은 [README.docker.md](./README.docker.md)를 참조하세요.
 
-### Usage
+### 비용 제한 시스템
 
-You can run your Deep Agents in Debug Mode, which will execute the agent step by step. This will allow you to re-run the specific steps of the agent. This is intended to be used alongside the optimizer.
+애플리케이션은 LangSmith API를 통해 누적 비용을 추적하고, 설정된 일일 비용 제한을 초과하면 메시지 전송을 차단합니다.
 
-You can also turn off Debug Mode to run the full agent end-to-end.
+- 환경변수 `DAILY_COST_LIMIT`로 제한 금액 설정 (기본값: 10.0)
+- 10분간 캐싱하여 API 호출 최적화
+- Rate Limit 방지 메커니즘 내장
 
 ### 📚 Resources
 

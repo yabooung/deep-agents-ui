@@ -47,15 +47,46 @@ export function useChat({
     // Enable fetching state history when switching to existing threads
     fetchStateHistory: true,
     // Revalidate thread list when stream finishes, errors, or creates new thread
-    onFinish: onHistoryRevalidate,
-    onError: onHistoryRevalidate,
-    onCreated: onHistoryRevalidate,
+    // 깜빡임 방지를 위해 콜백 제거 (필요시 주석 해제)
+    // onFinish: onHistoryRevalidate,
+    // onError: onHistoryRevalidate,
+    // onCreated: onHistoryRevalidate,
     experimental_thread: thread,
   });
 
   const sendMessage = useCallback(
-    (content: string) => {
+    async (content: string) => {
+      // 비용 제한 체크 (메시지 전송 전)
+      try {
+        const response = await fetch("/api/usage");
+        if (response.ok) {
+          const data = await response.json();
+          const totalCost = data.totalCost || 0;
+          const costLimit = data.costLimit || 10.0; // API에서 제한 금액 가져오기
+          
+          console.log("[SEND MESSAGE] Current cost:", totalCost, "Limit:", costLimit);
+          
+          if (data.isExceeded || totalCost >= costLimit) {
+            const errorMsg = `일일 사용량 제한에 도달했습니다.`;
+            console.error("[SEND MESSAGE] Cost limit exceeded - BLOCKING MESSAGE:", errorMsg);
+            throw new Error(errorMsg);
+          }
+          
+          console.log("[SEND MESSAGE] Cost check passed, allowing message");
+        } else {
+          console.warn("[SEND MESSAGE] Failed to check cost, continuing anyway");
+        }
+      } catch (error) {
+        // 비용 제한 초과 에러는 다시 throw하여 UI에서 처리
+        if (error instanceof Error && error.message.includes("일일 비용 제한")) {
+          throw error;
+        }
+        // 다른 에러는 무시하고 계속 진행
+        console.warn("[SEND MESSAGE] Cost check error, continuing anyway:", error);
+      }
+
       const newMessage: Message = { id: uuidv4(), type: "human", content };
+      
       stream.submit(
         { messages: [newMessage] },
         {

@@ -16,6 +16,7 @@ import {
   Clock,
   Circle,
   FileIcon,
+  Loader2,
 } from "lucide-react";
 import { ChatMessage } from "@/app/components/ChatMessage";
 import type {
@@ -67,6 +68,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [input, setInput] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { scrollRef, contentRef } = useStickToBottom();
 
   const {
@@ -87,14 +89,34 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
   const submitDisabled = isLoading || !assistant;
 
   const handleSubmit = useCallback(
-    (e?: FormEvent) => {
+    async (e?: FormEvent) => {
       if (e) {
         e.preventDefault();
       }
       const messageText = input.trim();
       if (!messageText || isLoading || submitDisabled) return;
-      sendMessage(messageText);
-      setInput("");
+      
+      // 에러 메시지 초기화
+      setErrorMessage(null);
+      
+      try {
+        await sendMessage(messageText);
+        // 성공 시에만 입력창 비우기
+        setInput("");
+      } catch (error) {
+        // 에러 처리
+        console.error("[CHAT INTERFACE] Error in handleSubmit:", error);
+        if (error instanceof Error) {
+          setErrorMessage(error.message);
+          // 에러 발생 시 입력 텍스트 유지 (사용자가 수정할 수 있도록)
+        } else {
+          setErrorMessage("메시지 전송 중 오류가 발생했습니다.");
+        }
+        // 에러 메시지를 스크롤하여 보이게 함
+        setTimeout(() => {
+          textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
+      }
     },
     [input, isLoading, sendMessage, setInput, submitDisabled]
   );
@@ -281,6 +303,39 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                   />
                 );
               })}
+              {/* 동적 스피너: 마지막 메시지가 AI 메시지이고 로딩 중일 때 표시 */}
+              {isLoading &&
+                processedMessages.length > 0 &&
+                processedMessages[processedMessages.length - 1].message.type ===
+                  "ai" && (
+                  <div className="flex w-full max-w-full overflow-x-hidden">
+                    <div className="min-w-0 max-w-full w-full">
+                      <div className="relative flex items-end gap-0 mt-4">
+                        <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            처리 중...
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              {/* 동적 스피너: 메시지가 없고 로딩 중일 때 표시 */}
+              {isLoading && processedMessages.length === 0 && (
+                <div className="flex w-full max-w-full overflow-x-hidden">
+                  <div className="min-w-0 max-w-full w-full">
+                    <div className="relative flex items-end gap-0 mt-4">
+                      <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          응답을 생성하는 중...
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -504,10 +559,25 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
             onSubmit={handleSubmit}
             className="flex flex-col"
           >
+            {/* 에러 메시지 표시 */}
+            {errorMessage && (
+              <div className="mx-[18px] mt-2 animate-in slide-in-from-top-2 rounded-md border-2 border-destructive bg-destructive/20 px-4 py-3 text-sm font-medium text-destructive shadow-md">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">⚠️</span>
+                  <span>{errorMessage}</span>
+                </div>
+              </div>
+            )}
             <textarea
               ref={textareaRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // 입력 시 에러 메시지 초기화
+                if (errorMessage) {
+                  setErrorMessage(null);
+                }
+              }}
               onKeyDown={handleKeyDown}
               placeholder={isLoading ? "Running..." : "Write your message..."}
               className="font-inherit field-sizing-content flex-1 resize-none border-0 bg-transparent px-[18px] pb-[13px] pt-[14px] text-sm leading-7 text-primary outline-none placeholder:text-tertiary"
