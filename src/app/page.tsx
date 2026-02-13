@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useQueryState } from "nuqs";
-import { getConfig, StandaloneConfig } from "@/lib/config";
+import { getConfig, getEffectiveConfig, StandaloneConfig } from "@/lib/config";
 // import { ConfigDialog } from "@/app/components/ConfigDialog"; // 주석 처리: 환경변수 사용으로 제거
 import { Button } from "@/components/ui/button";
 import { Assistant } from "@langchain/langgraph-sdk";
 import { ClientProvider, useClient } from "@/providers/ClientProvider";
-import { SquarePen } from "lucide-react";
+import Link from "next/link";
+import { SquarePen, Settings } from "lucide-react";
 // import { Settings, MessagesSquare } from "lucide-react"; // 주석 처리: Settings 버튼 제거
 import {
   ResizablePanel,
@@ -134,15 +135,12 @@ function HomePageInner({ config }: HomePageInnerProps) {
               <span className="font-medium">Assistant:</span>{" "}
               {config.assistantId}
             </div>
-            {/* 주석 처리: Settings 버튼 제거 - 환경변수 사용으로 변경 */}
-            {/* <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfigDialogOpen(true)}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button> */}
+            <Link href="/admin">
+              <Button variant="outline" size="sm">
+                <Settings className="mr-2 h-4 w-4" />
+                관리자
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="sm"
@@ -224,13 +222,17 @@ function HomePageContent() {
   // }, []);
 
   useEffect(() => {
-    const envConfig = getConfig();
-    if (envConfig) {
-      setConfig(envConfig);
-      if (!assistantId) {
-        setAssistantId(envConfig.assistantId);
+    const loadConfig = async () => {
+      const envConfig = getConfig();
+      if (envConfig) {
+        const effective = await getEffectiveConfig();
+        setConfig(effective ?? envConfig);
+        if (!assistantId) {
+          setAssistantId((effective ?? envConfig).assistantId);
+        }
       }
-    }
+    };
+    loadConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -1,21 +1,25 @@
 import { NextResponse } from 'next/server';
+import { getCostLimitOverride } from '@/lib/admin-overrides';
 
 let cachedTotalCost = 0;
 let lastFetchTime = 0;
 const CACHE_DURATION = 10 * 60 * 1000; // 429 방지를 위해 10분간 캐싱
 
-export async function GET() {
-  const API_KEY = process.env.LANGCHAIN_API_KEY || process.env.LANGSMITH_API_KEY || process.env.NEXT_PUBLIC_LANGSMITH_API_KEY;
-  // 프로젝트 ID (환경변수에서 가져오거나 기본값 사용)
-  const PROJECT_ID = process.env.LANGCHAIN_PROJECT_ID || process.env.LANGSMITH_PROJECT_ID || process.env.NEXT_PUBLIC_LANGSMITH_PROJECT_ID;
-  // 비용 제한 (환경변수에서 가져오거나 기본값 $10 사용)
-  // 0도 유효한 값이므로 명시적으로 체크 (0은 falsy이므로 || 연산자 사용 불가)
+function getCostLimit(): number {
+  const override = getCostLimitOverride();
+  if (override !== null) return override;
   const costLimitEnv = process.env.DAILY_COST_LIMIT || process.env.NEXT_PUBLIC_DAILY_COST_LIMIT;
-  const COST_LIMIT = costLimitEnv !== undefined && costLimitEnv !== null && costLimitEnv !== ""
+  return costLimitEnv !== undefined && costLimitEnv !== null && costLimitEnv !== ""
     ? parseFloat(costLimitEnv)
     : 10.0;
+}
+
+export async function GET() {
+  const API_KEY = process.env.LANGCHAIN_API_KEY || process.env.LANGSMITH_API_KEY || process.env.NEXT_PUBLIC_LANGSMITH_API_KEY;
+  const PROJECT_ID = process.env.LANGCHAIN_PROJECT_ID || process.env.LANGSMITH_PROJECT_ID || process.env.NEXT_PUBLIC_LANGSMITH_PROJECT_ID;
+  const COST_LIMIT = getCostLimit();
   
-  console.log("[API USAGE] Cost limit:", COST_LIMIT, "from env:", costLimitEnv);
+  console.log("[API USAGE] Cost limit:", COST_LIMIT);
   const now = Date.now();
 
   if (!API_KEY) {
