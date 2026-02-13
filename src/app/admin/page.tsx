@@ -12,6 +12,7 @@ const ADMIN_PIN_KEY = "admin_pin";
 
 interface SettingsData {
   deploymentUrl: string;
+  deploymentUrlFromEnv?: string;
   assistantId: string;
   costLimit: number;
   totalCost: number;
