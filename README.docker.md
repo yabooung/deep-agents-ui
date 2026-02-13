@@ -29,43 +29,47 @@ LANGCHAIN_PROJECT_ID=your_project_id
 LANGSMITH_PROJECT_ID=your_project_id
 ```
 
-### 2. 개발 환경 실행
+### 2. 실행
 
+**개발 환경 (포그라운드 - 로그 확인 가능)**
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-### 3. 프로덕션 환경 실행
-
+**프로덕션 환경 (백그라운드)**
 ```bash
-docker-compose -f docker-compose.prod.yml up --build -d
+# -d 플래그로 백그라운드에서 실행
+docker compose up --build -d
+
+# 로그 확인
+docker compose logs -f app
 ```
 
 ## 주요 명령어
 
 ### 컨테이너 시작
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 컨테이너 중지
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### 로그 확인
 ```bash
-docker-compose logs -f app
+docker compose logs -f app
 ```
 
 ### 컨테이너 재빌드
 ```bash
-docker-compose up --build
+docker compose up --build -d
 ```
 
 ### 컨테이너 내부 접속
 ```bash
-docker-compose exec app sh
+docker compose exec app sh
 ```
 
 ## 포트 변경

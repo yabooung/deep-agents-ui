@@ -5,6 +5,7 @@ import React, {
   useRef,
   useCallback,
   useMemo,
+  useEffect,
   FormEvent,
   Fragment,
 } from "react";
@@ -69,6 +70,8 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
 
   const [input, setInput] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showSpinner, setShowSpinner] = useState(false);
+  const spinnerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { scrollRef, contentRef } = useStickToBottom();
 
   const {
@@ -87,6 +90,25 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
   } = useChatContext();
 
   const submitDisabled = isLoading || !assistant;
+
+  // 깜빡임 방지: 로딩 끝난 뒤 스피너를 잠깐 유지했다가 숨김
+  useEffect(() => {
+    if (isLoading) {
+      if (spinnerTimeoutRef.current) {
+        clearTimeout(spinnerTimeoutRef.current);
+        spinnerTimeoutRef.current = null;
+      }
+      setShowSpinner(true);
+    } else {
+      spinnerTimeoutRef.current = setTimeout(() => {
+        setShowSpinner(false);
+        spinnerTimeoutRef.current = null;
+      }, 200);
+    }
+    return () => {
+      if (spinnerTimeoutRef.current) clearTimeout(spinnerTimeoutRef.current);
+    };
+  }, [isLoading]);
 
   const handleSubmit = useCallback(
     async (e?: FormEvent) => {
@@ -303,8 +325,8 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                   />
                 );
               })}
-              {/* 동적 스피너: 마지막 메시지가 AI 메시지이고 로딩 중일 때 표시 */}
-              {isLoading &&
+              {/* 동적 스피너: showSpinner 사용으로 종료 시 깜빡임 방지 */}
+              {showSpinner &&
                 processedMessages.length > 0 &&
                 processedMessages[processedMessages.length - 1].message.type ===
                   "ai" && (
@@ -312,9 +334,9 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                     <div className="min-w-0 max-w-full w-full">
                       <div className="relative flex items-end gap-0 mt-4">
                         <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <Loader2 className={cn("h-4 w-4 text-muted-foreground", isLoading && "animate-spin")} />
                           <span className="text-sm text-muted-foreground">
-                            처리 중...
+                            {isLoading ? "처리 중..." : ""}
                           </span>
                         </div>
                       </div>
@@ -322,14 +344,14 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                   </div>
                 )}
               {/* 동적 스피너: 메시지가 없고 로딩 중일 때 표시 */}
-              {isLoading && processedMessages.length === 0 && (
+              {showSpinner && processedMessages.length === 0 && (
                 <div className="flex w-full max-w-full overflow-x-hidden">
                   <div className="min-w-0 max-w-full w-full">
                     <div className="relative flex items-end gap-0 mt-4">
                       <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <Loader2 className={cn("h-4 w-4 text-muted-foreground", isLoading && "animate-spin")} />
                         <span className="text-sm text-muted-foreground">
-                          응답을 생성하는 중...
+                          {isLoading ? "응답을 생성하는 중..." : ""}
                         </span>
                       </div>
                     </div>

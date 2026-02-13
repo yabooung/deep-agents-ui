@@ -1,17 +1,25 @@
-version: '3.8'
-
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_DEPLOYMENT_URL=${NEXT_PUBLIC_DEPLOYMENT_URL}
+        - NEXT_PUBLIC_ASSISTANT_ID=${NEXT_PUBLIC_ASSISTANT_ID}
+        - NEXT_PUBLIC_LANGSMITH_API_KEY=${NEXT_PUBLIC_LANGSMITH_API_KEY}
+        - NEXT_PUBLIC_LANGSMITH_PROJECT_NAME=${NEXT_PUBLIC_LANGSMITH_PROJECT_NAME}
+        - NEXT_PUBLIC_LANGSMITH_PROJECT_ID=${NEXT_PUBLIC_LANGSMITH_PROJECT_ID}
+        - NEXT_PUBLIC_USE_MOCK_TOKEN_COUNTER=${NEXT_PUBLIC_USE_MOCK_TOKEN_COUNTER:-false}
+        - NEXT_PUBLIC_DAILY_TOKEN_LIMIT=${NEXT_PUBLIC_DAILY_TOKEN_LIMIT:-1}
     container_name: deep-agents-ui
     ports:
       - "8333:3000"
+    env_file:
+      - .env
     environment:
-      # Next.js 공개 환경변수
-      - NEXT_PUBLIC_DEPLOYMENT_URL=${NEXT_PUBLIC_DEPLOYMENT_URL:-http://localhost:3000}
-      - NEXT_PUBLIC_ASSISTANT_ID=${NEXT_PUBLIC_ASSISTANT_ID:-agent}
+      # Next.js 공개 환경변수 (빌드 타임에 필요)
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${NEXT_PUBLIC_DEPLOYMENT_URL}
+      - NEXT_PUBLIC_ASSISTANT_ID=${NEXT_PUBLIC_ASSISTANT_ID}
       - NEXT_PUBLIC_LANGSMITH_API_KEY=${NEXT_PUBLIC_LANGSMITH_API_KEY}
       - NEXT_PUBLIC_LANGSMITH_PROJECT_NAME=${NEXT_PUBLIC_LANGSMITH_PROJECT_NAME}
       - NEXT_PUBLIC_LANGSMITH_PROJECT_ID=${NEXT_PUBLIC_LANGSMITH_PROJECT_ID}
@@ -26,10 +34,8 @@ services:
       - LANGSMITH_PROJECT_ID=${LANGSMITH_PROJECT_ID:-${NEXT_PUBLIC_LANGSMITH_PROJECT_ID}}
       
       # Node.js 환경변수
-      - NODE_ENV=production
-    env_file:
-      - .env.local
-    restart: unless-stopped
+      - NODE_ENV=${NODE_ENV:-production}
+    restart: always
     networks:
       - app-network
     healthcheck:
