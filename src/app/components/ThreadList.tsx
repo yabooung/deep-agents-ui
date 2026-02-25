@@ -126,9 +126,12 @@ export function ThreadList({
   const [currentThreadId] = useQueryState("threadId");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const threads = useThreads({
     status: statusFilter === "all" ? undefined : statusFilter,
     limit: 20,
+    isAdmin,
   });
 
   const flattened = useMemo(() => {
@@ -206,11 +209,30 @@ export function ThreadList({
     onInterruptCountChange?.(interruptedCount);
   }, [interruptedCount, onInterruptCountChange]);
 
+  const handleAdminToggle = () => {
+    if (isAdmin) {
+      setIsAdmin(false);
+      return;
+    }
+    const code = window.prompt("Enter admin code:");
+    if (code === "admin123") {
+      setIsAdmin(true);
+    } else if (code !== null) {
+      alert("Invalid code");
+    }
+  };
+
   return (
     <div className="absolute inset-0 flex flex-col">
       {/* Header with title, filter, and close button */}
       <div className="grid flex-shrink-0 grid-cols-[1fr_auto] items-center gap-3 border-b border-border p-4">
-        <h2 className="text-lg font-semibold tracking-tight">Threads</h2>
+        <h2
+          className="text-lg font-semibold tracking-tight cursor-pointer select-none"
+          onDoubleClick={handleAdminToggle}
+          title={isAdmin ? "Admin Mode Active (Double click to exit)" : "Double click for Admin Mode"}
+        >
+          Threads {isAdmin && <span className="text-xs text-red-500 font-normal ml-2">(Admin)</span>}
+        </h2>
         <div className="flex items-center gap-2">
           <Select
             value={statusFilter}

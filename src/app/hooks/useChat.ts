@@ -12,6 +12,7 @@ import type { UseStreamThread } from "@langchain/langgraph-sdk/react";
 import type { TodoItem } from "@/app/types/types";
 import { useClient } from "@/providers/ClientProvider";
 import { useQueryState } from "nuqs";
+import { getUserId } from "@/lib/userId";
 
 export type StateType = {
   messages: Message[];
@@ -37,12 +38,29 @@ export function useChat({
   const [threadId, setThreadId] = useQueryState("threadId");
   const client = useClient();
 
+  const userId = getUserId();
+
+  const handleThreadId = useCallback(
+    async (newThreadId: string) => {
+      await setThreadId(newThreadId);
+      // Tag newly created threads with user_id
+      if (userId && newThreadId) {
+        try {
+          await client.threads.update(newThreadId, { metadata: { user_id: userId } });
+        } catch (e) {
+          console.warn("Failed to tag thread with user_id:", e);
+        }
+      }
+    },
+    [setThreadId, client, userId]
+  );
+
   const stream = useStream<StateType>({
     assistantId: activeAssistant?.assistant_id || "",
     client: client ?? undefined,
     reconnectOnMount: true,
     threadId: threadId ?? null,
-    onThreadId: setThreadId,
+    onThreadId: handleThreadId,
     defaultHeaders: { "x-auth-scheme": "langsmith" },
     // Enable fetching state history when switching to existing threads
     fetchStateHistory: true,
@@ -63,15 +81,15 @@ export function useChat({
           const data = await response.json();
           const totalCost = data.totalCost || 0;
           const costLimit = data.costLimit || 10.0; // API에서 제한 금액 가져오기
-          
+
           console.log("[SEND MESSAGE] Current cost:", totalCost, "Limit:", costLimit);
-          
+
           if (data.isExceeded || totalCost >= costLimit) {
             const errorMsg = `일일 사용량 제한에 도달했습니다.`;
             console.error("[SEND MESSAGE] Cost limit exceeded - BLOCKING MESSAGE:", errorMsg);
             throw new Error(errorMsg);
           }
-          
+
           console.log("[SEND MESSAGE] Cost check passed, allowing message");
         } else {
           console.warn("[SEND MESSAGE] Failed to check cost, continuing anyway");
@@ -86,7 +104,7 @@ export function useChat({
       }
 
       const newMessage: Message = { id: uuidv4(), type: "human", content };
-      
+
       stream.submit(
         { messages: [newMessage] },
         {

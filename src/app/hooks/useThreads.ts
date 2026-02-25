@@ -2,6 +2,7 @@ import useSWRInfinite from "swr/infinite";
 import type { Thread } from "@langchain/langgraph-sdk";
 import { Client } from "@langchain/langgraph-sdk";
 import { getConfig } from "@/lib/config";
+import { getUserId } from "@/lib/userId";
 
 export interface ThreadItem {
   id: string;
@@ -17,8 +18,10 @@ const DEFAULT_PAGE_SIZE = 20;
 export function useThreads(props: {
   status?: Thread["status"];
   limit?: number;
+  isAdmin?: boolean;
 }) {
   const pageSize = props.limit || DEFAULT_PAGE_SIZE;
+  const isAdmin = props.isAdmin ?? false;
 
   return useSWRInfinite(
     (pageIndex: number, previousPageData: ThreadItem[] | null) => {
@@ -45,6 +48,7 @@ export function useThreads(props: {
         assistantId: config.assistantId,
         apiKey,
         status: props?.status,
+        isAdmin,
       };
     },
     async ({
@@ -54,6 +58,7 @@ export function useThreads(props: {
       status,
       pageIndex,
       pageSize,
+      isAdmin,
     }: {
       kind: "threads";
       pageIndex: number;
@@ -62,6 +67,7 @@ export function useThreads(props: {
       assistantId: string;
       apiKey: string;
       status?: Thread["status"];
+      isAdmin: boolean;
     }) => {
       const client = new Client({
         apiUrl: deploymentUrl,
@@ -74,15 +80,20 @@ export function useThreads(props: {
           assistantId
         );
 
+      const userId = getUserId();
+
       const threads = await client.threads.search({
         limit: pageSize,
         offset: pageIndex * pageSize,
         sortBy: "updated_at" as const,
         sortOrder: "desc" as const,
         status,
-        // Only filter by assistant_id metadata for deployed graphs (UUIDs)
-        // Local dev graphs don't set this metadata
-        ...(isUUID ? { metadata: { assistant_id: assistantId } } : {}),
+        metadata: {
+          // Only filter by assistant_id metadata for deployed graphs (UUIDs)
+          ...(isUUID ? { assistant_id: assistantId } : {}),
+          // Filter by user_id to show only the current user's threads (skip for admin)
+          ...(!isAdmin && userId ? { user_id: userId } : {}),
+        },
       });
 
       return threads.map((thread): ThreadItem => {
