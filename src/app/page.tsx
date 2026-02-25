@@ -8,13 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Assistant } from "@langchain/langgraph-sdk";
 import { ClientProvider, useClient } from "@/providers/ClientProvider";
 import Link from "next/link";
-import { SquarePen, Settings } from "lucide-react";
-// import { Settings, MessagesSquare } from "lucide-react"; // 주석 처리: Settings 버튼 제거
+import { Settings, MessagesSquare, SquarePen } from "lucide-react";
 import {
+  ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-// import { ThreadList } from "@/app/components/ThreadList"; // 주석 처리: 스레드 기록 기능 제거
+import { ThreadList } from "@/app/components/ThreadList";
 import { ChatProvider } from "@/providers/ChatProvider";
 import { ChatInterface } from "@/app/components/ChatInterface";
 
@@ -28,9 +28,9 @@ interface HomePageInnerProps {
 function HomePageInner({ config }: HomePageInnerProps) {
   const client = useClient();
   const [threadId, setThreadId] = useQueryState("threadId");
-  // const [sidebar, setSidebar] = useQueryState("sidebar"); // 주석 처리: 스레드 사이드바 제거
-  // const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null); // 주석 처리: 스레드 기능 제거
-  // const [interruptCount, setInterruptCount] = useState(0); // 주석 처리: 스레드 기능 제거
+  const [sidebar, setSidebar] = useQueryState("sidebar");
+  const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null);
+  const [interruptCount, setInterruptCount] = useState(0);
 
   const [assistant, setAssistant] = useState<Assistant | null>(null);
 
@@ -113,7 +113,7 @@ function HomePageInner({ config }: HomePageInnerProps) {
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold">의료 규제 전문가 에이전트</h1>
             {/* 주석 처리: Threads 버튼 제거 - 스레드 기록 기능 제거 */}
-            {/* {!sidebar && (
+            {!sidebar && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -128,7 +128,7 @@ function HomePageInner({ config }: HomePageInnerProps) {
                   </span>
                 )}
               </Button>
-            )} */}
+            )}
           </div>
           <div className="flex items-center gap-2">
             <div className="text-sm text-muted-foreground">
@@ -160,7 +160,7 @@ function HomePageInner({ config }: HomePageInnerProps) {
             autoSaveId="standalone-chat"
           >
             {/* 주석 처리: ThreadList 사이드바 제거 - 스레드 기록 기능 제거 */}
-            {/* {sidebar && (
+            {sidebar && (
               <>
                 <ResizablePanel
                   id="thread-history"
@@ -180,7 +180,7 @@ function HomePageInner({ config }: HomePageInnerProps) {
                 </ResizablePanel>
                 <ResizableHandle />
               </>
-            )} */}
+            )}
 
             <ResizablePanel
               id="chat"
@@ -189,7 +189,7 @@ function HomePageInner({ config }: HomePageInnerProps) {
             >
               <ChatProvider
                 activeAssistant={assistant}
-                // onHistoryRevalidate={() => mutateThreads?.()} // 주석 처리: 스레드 기능 제거
+                onHistoryRevalidate={() => mutateThreads?.()}
               >
                 <ChatInterface assistant={assistant} />
               </ChatProvider>

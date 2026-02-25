@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:test": "env-cmd -f .env.test next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -62,6 +63,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.24",
+    "env-cmd": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16",
     "eslint-plugin-react-hooks": "^5.2.0",
