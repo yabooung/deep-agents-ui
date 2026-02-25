@@ -25,6 +25,9 @@ export const MarkdownContent = React.memo<MarkdownContentProps>(
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
+            hr({ ...props }: { children?: React.ReactNode }) {
+              return <hr className="my-2 border-border" {...props} />;
+            },
             p({ children, ...props }: { children?: React.ReactNode }) {
               let contentString = "";
               const extractText = (node: any) => {
