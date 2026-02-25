@@ -3,7 +3,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
@@ -18,12 +17,12 @@ export const MarkdownContent = React.memo<MarkdownContentProps>(
     return (
       <div
         className={cn(
-          "prose min-w-0 max-w-full overflow-hidden break-words text-sm leading-relaxed text-inherit [&_h1:first-child]:mt-0 [&_h1]:mb-4 [&_h1]:mt-6 [&_h1]:font-semibold [&_h2:first-child]:mt-0 [&_h2]:mb-4 [&_h2]:mt-6 [&_h2]:font-semibold [&_h3:first-child]:mt-0 [&_h3]:mb-4 [&_h3]:mt-6 [&_h3]:font-semibold [&_h4:first-child]:mt-0 [&_h4]:mb-4 [&_h4]:mt-6 [&_h4]:font-semibold [&_h5:first-child]:mt-0 [&_h5]:mb-4 [&_h5]:mt-6 [&_h5]:font-semibold [&_h6:first-child]:mt-0 [&_h6]:mb-4 [&_h6]:mt-6 [&_h6]:font-semibold [&_p:last-child]:mb-0 [&_p]:mb-4 [&_hr]:my-4",
+          "prose min-w-0 max-w-full overflow-hidden break-words text-sm leading-relaxed text-inherit [&_h1:first-child]:mt-0 [&_h1]:mb-3 [&_h1]:mt-5 [&_h1]:font-semibold [&_h2:first-child]:mt-0 [&_h2]:mb-3 [&_h2]:mt-4 [&_h2]:font-semibold [&_h3:first-child]:mt-0 [&_h3]:mb-2 [&_h3]:mt-3 [&_h3]:font-semibold [&_h4:first-child]:mt-0 [&_h4]:mb-2 [&_h4]:mt-3 [&_h4]:font-semibold [&_h5:first-child]:mt-0 [&_h5]:mb-2 [&_h5]:mt-3 [&_h5]:font-semibold [&_h6:first-child]:mt-0 [&_h6]:mb-2 [&_h6]:mt-3 [&_h6]:font-semibold [&_p:last-child]:mb-0 [&_p]:mb-3 [&_hr]:my-3",
           className
         )}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkBreaks]}
+          remarkPlugins={[remarkGfm]}
           components={{
             hr({ ...props }: { children?: React.ReactNode }) {
               return <hr className="!my-2 border-border" {...props} />;
@@ -46,9 +45,9 @@ export const MarkdownContent = React.memo<MarkdownContentProps>(
               return (
                 <p
                   className={cn(
-                    "mb-4 last:mb-0",
+                    "my-1 last:mb-0",
                     isTreeOrSpaced
-                      ? "whitespace-pre-wrap font-mono text-[13px] leading-[1.4] tracking-tight"
+                      ? "whitespace-pre-wrap font-mono text-[13px] leading-[1.3] tracking-tight"
                       : "whitespace-pre-wrap leading-relaxed"
                   )}
                   {...props}
