@@ -155,19 +155,42 @@ function HomePageInner({ config }: HomePageInnerProps) {
         </header>
 
         <div className="flex-1 overflow-hidden">
+          {/* Mobile: full-screen overlay */}
+          {sidebar && (
+            <div className="absolute inset-0 z-50 lg:hidden">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setSidebar(null)}
+              />
+              <div className="relative h-full w-full bg-background">
+                <ThreadList
+                  onThreadSelect={async (id) => {
+                    await setThreadId(id);
+                    await setSidebar(null);
+                  }}
+                  onMutateReady={(fn) => setMutateThreads(() => fn)}
+                  onClose={() => setSidebar(null)}
+                  onInterruptCountChange={setInterruptCount}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Desktop: resizable sidebar */}
           <ResizablePanelGroup
             direction="horizontal"
             autoSaveId="standalone-chat"
+            className="h-full"
           >
-            {/* 주석 처리: ThreadList 사이드바 제거 - 스레드 기록 기능 제거 */}
             {sidebar && (
               <>
                 <ResizablePanel
                   id="thread-history"
                   order={1}
-                  defaultSize={25}
+                  defaultSize={30}
                   minSize={20}
-                  className="relative min-w-[380px]"
+                  maxSize={40}
+                  className="relative hidden min-w-[300px] lg:block"
                 >
                   <ThreadList
                     onThreadSelect={async (id) => {
@@ -178,14 +201,14 @@ function HomePageInner({ config }: HomePageInnerProps) {
                     onInterruptCountChange={setInterruptCount}
                   />
                 </ResizablePanel>
-                <ResizableHandle />
+                <ResizableHandle className="hidden lg:flex" />
               </>
             )}
 
             <ResizablePanel
               id="chat"
               className="relative flex flex-col"
-              order={1}
+              order={2}
             >
               <ChatProvider
                 activeAssistant={assistant}
