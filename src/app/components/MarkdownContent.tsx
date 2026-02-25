@@ -42,6 +42,43 @@ export const MarkdownContent = React.memo<MarkdownContentProps>(
 
               const isTreeOrSpaced = /[├└│]/.test(contentString) || / {3,}/.test(contentString);
 
+              const processTextNodes = (nodes: React.ReactNode): React.ReactNode => {
+                return React.Children.map(nodes, (child) => {
+                  if (typeof child === "string") {
+                    const lines = child.split("\n");
+                    return lines.map((line, i) => {
+                      const isLast = i === lines.length - 1;
+                      if (line.trim() === "") {
+                        return (
+                          <React.Fragment key={i}>
+                            <span className="text-[4px] leading-[4px] select-none text-transparent">
+                              {line.length > 0 ? line : " "}
+                              {!isLast && "\n"}
+                            </span>
+                          </React.Fragment>
+                        );
+                      }
+                      return (
+                        <React.Fragment key={i}>
+                          {line}
+                          {!isLast && "\n"}
+                        </React.Fragment>
+                      );
+                    });
+                  }
+                  if (React.isValidElement(child)) {
+                    return React.cloneElement(
+                      child as React.ReactElement<any>,
+                      (child as React.ReactElement<any>).props,
+                      processTextNodes((child as React.ReactElement<any>).props.children)
+                    );
+                  }
+                  return child;
+                });
+              };
+
+              const processedChildren = isTreeOrSpaced ? processTextNodes(children) : children;
+
               return (
                 <p
                   className={cn(
@@ -52,7 +89,7 @@ export const MarkdownContent = React.memo<MarkdownContentProps>(
                   )}
                   {...props}
                 >
-                  {children}
+                  {processedChildren}
                 </p>
               );
             },
