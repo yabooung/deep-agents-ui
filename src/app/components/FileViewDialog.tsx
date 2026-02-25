@@ -216,7 +216,7 @@ export const FileViewDialog = React.memo<{
               <div className="p-4">
                 {fileContent ? (
                   isMarkdown ? (
-                    <div className="rounded-md p-6">
+                    <div className="whitespace-pre-wrap rounded-md p-6">
                       <MarkdownContent content={fileContent} />
                     </div>
                   ) : (
