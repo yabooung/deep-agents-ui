@@ -35,6 +35,23 @@ function HomePageInner({ config }: HomePageInnerProps) {
   const [assistant, setAssistant] = useState<Assistant | null>(null);
 
   const fetchAssistant = useCallback(async () => {
+    // 초기 렌더에서 assistant가 null이면 Send가 비활성/무반응처럼 느껴질 수 있어
+    // 네트워크 호출 전에 최소한의 placeholder를 먼저 세팅
+    setAssistant((prev) => {
+      if (prev) return prev;
+      return {
+        assistant_id: config.assistantId,
+        graph_id: config.assistantId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        config: {},
+        metadata: {},
+        version: 1,
+        name: config.assistantId || "Assistant",
+        context: {},
+      };
+    });
+
     const isUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         config.assistantId

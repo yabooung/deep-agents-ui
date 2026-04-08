@@ -296,8 +296,9 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
           ref={contentRef}
         >
           {isThreadLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <p className="text-muted-foreground">Loading...</p>
+            // 전체 화면을 갈아끼우면 깜빡임처럼 보여서, 레이아웃은 유지하고 안내만 표시
+            <div className="flex items-center justify-center p-4">
+              <p className="text-muted-foreground text-sm">Loading...</p>
             </div>
           ) : (
             <>

@@ -76,7 +76,13 @@ export function useChat({
     async (content: string) => {
       // 비용 제한 체크 (메시지 전송 전)
       try {
-        const response = await fetch("/api/usage");
+        // /api/usage가 느리면 "Send 눌러도 반응 없음"처럼 보일 수 있어 타임아웃을 둠
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const response = await fetch("/api/usage", {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
         if (response.ok) {
           const data = await response.json();
           const totalCost = data.totalCost || 0;
