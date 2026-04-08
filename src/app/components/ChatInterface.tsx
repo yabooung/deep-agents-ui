@@ -295,71 +295,80 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
           className="mx-auto w-full max-w-[1024px] px-6 pb-6 pt-4"
           ref={contentRef}
         >
-          {isThreadLoading ? (
-            // 전체 화면을 갈아끼우면 깜빡임처럼 보여서, 레이아웃은 유지하고 안내만 표시
-            <div className="flex items-center justify-center p-4">
-              <p className="text-muted-foreground text-sm">Loading...</p>
+          {/* 스레드 로딩 시에도 메시지 리스트는 유지 (깜빡임 방지) */}
+          {processedMessages.map((data, index) => {
+            const messageUi = ui?.filter(
+              (u: any) => u.metadata?.message_id === data.message.id
+            );
+            const isLastMessage = index === processedMessages.length - 1;
+            return (
+              <ChatMessage
+                key={data.message.id}
+                message={data.message}
+                toolCalls={data.toolCalls}
+                isLoading={isLoading}
+                actionRequestsMap={isLastMessage ? actionRequestsMap : undefined}
+                reviewConfigsMap={isLastMessage ? reviewConfigsMap : undefined}
+                ui={messageUi}
+                stream={stream}
+                onResumeInterrupt={resumeInterrupt}
+                graphId={assistant?.graph_id}
+              />
+            );
+          })}
+
+          {/* 스레드 로딩 안내: 화면 교체 대신 상단 배지로만 표시 */}
+          {isThreadLoading && (
+            <div className="sticky top-2 z-10 flex justify-center">
+              <div className="flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Loading...</span>
+              </div>
             </div>
-          ) : (
-            <>
-              {processedMessages.map((data, index) => {
-                const messageUi = ui?.filter(
-                  (u: any) => u.metadata?.message_id === data.message.id
-                );
-                const isLastMessage = index === processedMessages.length - 1;
-                return (
-                  <ChatMessage
-                    key={data.message.id}
-                    message={data.message}
-                    toolCalls={data.toolCalls}
-                    isLoading={isLoading}
-                    actionRequestsMap={
-                      isLastMessage ? actionRequestsMap : undefined
-                    }
-                    reviewConfigsMap={
-                      isLastMessage ? reviewConfigsMap : undefined
-                    }
-                    ui={messageUi}
-                    stream={stream}
-                    onResumeInterrupt={resumeInterrupt}
-                    graphId={assistant?.graph_id}
-                  />
-                );
-              })}
-              {/* 동적 스피너: showSpinner 사용으로 종료 시 깜빡임 방지 */}
-              {showSpinner &&
-                processedMessages.length > 0 &&
-                processedMessages[processedMessages.length - 1].message.type ===
-                  "ai" && (
-                  <div className="flex w-full max-w-full overflow-x-hidden">
-                    <div className="min-w-0 max-w-full w-full">
-                      <div className="relative flex items-end gap-0 mt-4">
-                        <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
-                          <Loader2 className={cn("h-4 w-4 text-muted-foreground", isLoading && "animate-spin")} />
-                          <span className="text-sm text-muted-foreground">
-                            {isLoading ? "처리 중..." : ""}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              {/* 동적 스피너: 메시지가 없고 로딩 중일 때 표시 */}
-              {showSpinner && processedMessages.length === 0 && (
-                <div className="flex w-full max-w-full overflow-x-hidden">
-                  <div className="min-w-0 max-w-full w-full">
-                    <div className="relative flex items-end gap-0 mt-4">
-                      <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
-                        <Loader2 className={cn("h-4 w-4 text-muted-foreground", isLoading && "animate-spin")} />
-                        <span className="text-sm text-muted-foreground">
-                          {isLoading ? "응답을 생성하는 중..." : ""}
-                        </span>
-                      </div>
+          )}
+
+          {/* 동적 스피너: showSpinner 사용으로 종료 시 깜빡임 방지 */}
+          {showSpinner &&
+            processedMessages.length > 0 &&
+            processedMessages[processedMessages.length - 1].message.type ===
+              "ai" && (
+              <div className="flex w-full max-w-full overflow-x-hidden">
+                <div className="min-w-0 max-w-full w-full">
+                  <div className="relative flex items-end gap-0 mt-4">
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
+                      <Loader2
+                        className={cn(
+                          "h-4 w-4 text-muted-foreground",
+                          isLoading && "animate-spin"
+                        )}
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {isLoading ? "처리 중..." : ""}
+                      </span>
                     </div>
                   </div>
                 </div>
-              )}
-            </>
+              </div>
+            )}
+          {/* 동적 스피너: 메시지가 없고 로딩 중일 때 표시 */}
+          {showSpinner && processedMessages.length === 0 && (
+            <div className="flex w-full max-w-full overflow-x-hidden">
+              <div className="min-w-0 max-w-full w-full">
+                <div className="relative flex items-end gap-0 mt-4">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-border bg-background">
+                    <Loader2
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground",
+                        isLoading && "animate-spin"
+                      )}
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {isLoading ? "응답을 생성하는 중..." : ""}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
